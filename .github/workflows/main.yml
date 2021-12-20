@@ -4,9 +4,6 @@ name: CI
 
 # Controls when the workflow will run
 on:
-  # Triggers the workflow on push or pull request events but only for the main branch
-  push:
-    branches: [ main ]
   pull_request_target:
     types: [labeled]
     branches: [ main ]
@@ -29,9 +26,15 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - name: Checkout PR
       - uses: actions/checkout@v2
+        if: contains(github.event.pull_request.labels.*.name, 'ok-to-test')
         with:
           ref: ${{ github.event.pull_request.head.sha }}
+      
+      - name: Checkout
+      - uses: actions/checkout@v2
+        if: github.event.inputs.version
 
       # Runs a single command using the runners shell
       - name: Run a one-line script
@@ -39,7 +42,9 @@ jobs:
 
       # Runs a set of commands using the runners shell
       - name: Echo Version
+        if: github.event.inputs.version
         run: echo ${{ github.event.inputs.version }}
       
       - name: Print env
+        if: contains(github.event.pull_request.labels.*.name, 'ok-to-test')
         run: ./dump.sh
