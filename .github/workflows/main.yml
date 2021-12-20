@@ -27,13 +27,13 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - name: Checkout PR
-      - uses: actions/checkout@v2
+        uses: actions/checkout@v2
         if: contains(github.event.pull_request.labels.*.name, 'ok-to-test')
         with:
           ref: ${{ github.event.pull_request.head.sha }}
       
       - name: Checkout
-      - uses: actions/checkout@v2
+        uses: actions/checkout@v2
         if: github.event.inputs.version
 
       # Runs a single command using the runners shell
