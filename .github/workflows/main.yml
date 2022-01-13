@@ -13,29 +13,31 @@ on:
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release'     
+        required: true
+      commit:
+        description: 'Commit to release'     
+        required: true
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "build"
-  build:
-    # The type of runner that the job will run on
+  publish-release:
+    name: "Publish Release"
     runs-on: ubuntu-latest
-    if: contains(github.event.pull_request.labels.*.name, 'ok-to-test')
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
+    if: github.event.inputs.version && github.event.inputs.commit
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - uses: ncipollo/release-action@v1
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
-
-      # Runs a single command using the runners shell
-      - name: Run a one-line script
-        run: echo Hello, world!
-
-      # Runs a set of commands using the runners shell
-      - name: Access Secret
-        run: echo ${{ secrets.REGISTRY_USERNAME }}
-      
-      - name: Print env
-        run: ./dump.sh
+          artifacts: "README.md"
+          allowUpdates: true
+          prerelease: true
+          commit: ${{ github.event.inputs.commit }}
+          name: ${{ github.event.inputs.version }}
+          tag: ${{ github.event.inputs.version }}
+          token: ${{ secrets.GITHUB_TOKEN }}
